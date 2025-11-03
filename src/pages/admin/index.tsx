@@ -4,38 +4,49 @@ import { useRouter } from 'next/router';
 import { authGuard } from '@/middleware/authGuard';
 import Navbar from '@/components/Navbar';
 import { useDarkMode } from '@/context/DarkModeContext';
-import { Edit2, Trash2, Plus } from 'lucide-react'; // 🧩 ICONS dari lucide-react
+import { Edit2, Trash2, Plus } from 'lucide-react';
 
 type Book = {
   id: string;
   title: string;
   author: string;
   status: string;
+  cover_url?: string | null;
+  created_at?: string;
 };
 
 export default function AdminDashboard() {
   const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { isDarkMode } = useDarkMode();
 
   useEffect(() => {
     (async () => {
       await authGuard(router);
-      fetchBooks();
+      await fetchBooks();
     })();
   }, []);
 
   async function fetchBooks() {
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from('books')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (error) console.error('Gagal memuat data buku:', error.message);
     setBooks(data ?? []);
+    setLoading(false);
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Yakin ingin menghapus buku ini?')) return;
-    await supabase.from('books').delete().eq('id', id);
+    const { error } = await supabase.from('books').delete().eq('id', id);
+    if (error) {
+      alert('Gagal menghapus buku: ' + error.message);
+      return;
+    }
     fetchBooks();
   }
 
@@ -52,6 +63,7 @@ export default function AdminDashboard() {
             📘 Dashboard Admin
           </h1>
 
+          {/* Tombol Tambah Buku */}
           <button
             onClick={() => router.push('/admin/add')}
             className={`mb-6 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
@@ -64,6 +76,7 @@ export default function AdminDashboard() {
             Tambah Buku
           </button>
 
+          {/* Tabel Buku */}
           <div
             className={`rounded-xl overflow-hidden shadow-lg border ${
               isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'
@@ -76,6 +89,7 @@ export default function AdminDashboard() {
                     isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-200 text-gray-800'
                   }`}
                 >
+                  <th className="border px-3 py-2 w-20 text-center">Cover</th>
                   <th className="border px-3 py-2">Judul</th>
                   <th className="border px-3 py-2">Penulis</th>
                   <th className="border px-3 py-2">Status</th>
@@ -83,10 +97,21 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {books.length === 0 ? (
+                {loading ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
+                      className={`text-center py-6 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}
+                    >
+                      Memuat data buku...
+                    </td>
+                  </tr>
+                ) : books.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
                       className={`text-center py-6 ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-500'
                       }`}
@@ -104,9 +129,31 @@ export default function AdminDashboard() {
                           : 'hover:bg-gray-100 border-gray-200'
                       }`}
                     >
-                      <td className="border px-3 py-2">{b.title}</td>
+                      {/* Kolom Cover */}
+                      <td className="border px-3 py-2 text-center">
+                        {b.cover_url ? (
+                          <img
+                            src={b.cover_url}
+                            alt={b.title}
+                            className="w-12 h-16 object-cover rounded mx-auto"
+                          />
+                        ) : (
+                          <span
+                            className={`text-sm italic ${
+                              isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                            }`}
+                          >
+                            -
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Kolom Info */}
+                      <td className="border px-3 py-2 font-medium">{b.title}</td>
                       <td className="border px-3 py-2">{b.author}</td>
                       <td className="border px-3 py-2 capitalize">{b.status}</td>
+
+                      {/* Kolom Aksi */}
                       <td className="border px-3 py-2 text-center">
                         <div className="flex items-center justify-center gap-3">
                           <button

@@ -15,7 +15,7 @@ export default function AddBookPage() {
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverUrl, setCoverUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -24,27 +24,6 @@ export default function AddBookPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
-
-    let coverUrl = null;
-    if (coverFile) {
-      const fileExt = coverFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('book-covers')
-        .upload(fileName, coverFile);
-
-      if (uploadError) {
-        alert('Gagal upload gambar: ' + uploadError.message);
-        setLoading(false);
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('book-covers')
-        .getPublicUrl(fileName);
-
-      coverUrl = publicUrlData?.publicUrl ?? null;
-    }
 
     const { error } = await supabase.from('books').insert([
       {
@@ -58,7 +37,7 @@ export default function AddBookPage() {
         total_pages: totalPages,
         rating,
         notes,
-        cover_url: coverUrl,
+        cover_url: coverUrl || null,
       },
     ]);
 
@@ -84,7 +63,7 @@ export default function AddBookPage() {
           <h1 className="text-2xl font-bold mb-6">➕ Tambah Buku Baru</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Input Judul */}
+            {/* Judul */}
             <input
               type="text"
               placeholder="Judul Buku"
@@ -98,7 +77,7 @@ export default function AddBookPage() {
               required
             />
 
-            {/* Input Penulis */}
+            {/* Penulis */}
             <input
               type="text"
               placeholder="Penulis"
@@ -139,7 +118,7 @@ export default function AddBookPage() {
               <option value="completed">Selesai Dibaca</option>
             </select>
 
-            {/* Tanggal */}
+            {/* Tanggal Mulai & Selesai */}
             <div>
               <label className="block mb-1">Tanggal Mulai</label>
               <input
@@ -168,7 +147,7 @@ export default function AddBookPage() {
               />
             </div>
 
-            {/* Progress */}
+            {/* Progress Membaca */}
             <div>
               <label className="block mb-1">Progress Membaca</label>
               <div className="flex gap-2">
@@ -231,15 +210,27 @@ export default function AddBookPage() {
               />
             </div>
 
-            {/* Upload Cover */}
+            {/* URL Cover */}
             <div>
-              <label className="block mb-1 font-medium">Cover Buku</label>
+              <label className="block mb-1 font-medium">URL Cover Buku</label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
-                className="w-full text-sm"
+                type="url"
+                placeholder="https://contoh.com/cover.jpg"
+                value={coverUrl}
+                onChange={(e) => setCoverUrl(e.target.value)}
+                className={`w-full border rounded px-3 py-2 ${
+                  isDarkMode
+                    ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
               />
+              {coverUrl && (
+                <img
+                  src={coverUrl}
+                  alt="Preview Cover"
+                  className="mt-3 w-32 h-auto rounded shadow"
+                />
+              )}
             </div>
 
             {/* Tombol Simpan */}

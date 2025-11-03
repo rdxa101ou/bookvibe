@@ -9,7 +9,7 @@ type Book = {
   title: string;
   author: string;
   description?: string;
-  cover_url?: string;
+  cover_url?: string | null;
   status: string;
   rating?: number | null;
   notes?: string | null;
@@ -29,14 +29,13 @@ export default function EditBookPage() {
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('wishlist');
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverUrl, setCoverUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Ambil data buku berdasarkan ID
   useEffect(() => {
     const bookId = Array.isArray(id) ? id[0] : id;
-    if (!bookId) return;
-    fetchBook(bookId);
+    if (bookId) fetchBook(bookId);
   }, [id]);
 
   async function fetchBook(bookId: string) {
@@ -46,8 +45,8 @@ export default function EditBookPage() {
       .eq('id', bookId)
       .single();
 
-    if (error) {
-      alert('Gagal mengambil data buku: ' + error.message);
+    if (error || !data) {
+      alert('Gagal mengambil data buku: ' + error?.message);
       router.push('/admin');
       return;
     }
@@ -57,6 +56,7 @@ export default function EditBookPage() {
     setAuthor(data.author);
     setDescription(data.description || '');
     setStatus(data.status);
+    setCoverUrl(data.cover_url || '');
   }
 
   async function handleUpdate(e: FormEvent) {
@@ -67,29 +67,6 @@ export default function EditBookPage() {
     const bookId = Array.isArray(id) ? id[0] : id;
     if (!bookId) return;
 
-    let coverUrl = book.cover_url ?? null;
-
-    // Upload cover baru jika dipilih
-    if (coverFile) {
-      const fileExt = coverFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('book-covers')
-        .upload(fileName, coverFile, { upsert: true });
-
-      if (uploadError) {
-        alert('Gagal upload cover: ' + uploadError.message);
-        setLoading(false);
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('book-covers')
-        .getPublicUrl(fileName);
-      coverUrl = publicUrlData?.publicUrl ?? null;
-    }
-
     const { error } = await supabase
       .from('books')
       .update({
@@ -97,7 +74,7 @@ export default function EditBookPage() {
         author,
         description,
         status,
-        cover_url: coverUrl,
+        cover_url: coverUrl || null,
         rating: book.rating ?? null,
         notes: book.notes ?? null,
         start_date: book.start_date ?? null,
@@ -117,7 +94,17 @@ export default function EditBookPage() {
     setLoading(false);
   }
 
-  if (!book) return <p className="p-8">Memuat data buku...</p>;
+  if (!book) {
+    return (
+      <p
+        className={`p-8 text-center ${
+          isDarkMode ? 'text-gray-400' : 'text-gray-600'
+        }`}
+      >
+        Memuat data buku...
+      </p>
+    );
+  }
 
   return (
     <>
@@ -134,7 +121,6 @@ export default function EditBookPage() {
         >
           <h1 className="text-2xl font-bold mb-4">✏️ Edit Buku</h1>
 
-          {/* Scrollable form container */}
           <div className="max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
             <form onSubmit={handleUpdate} className="space-y-4">
               {/* Judul & Penulis */}
@@ -150,6 +136,7 @@ export default function EditBookPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
+
               <input
                 type="text"
                 placeholder="Penulis"
@@ -163,7 +150,7 @@ export default function EditBookPage() {
                 required
               />
 
-              {/* Deskripsi & Status */}
+              {/* Deskripsi */}
               <textarea
                 placeholder="Deskripsi"
                 className={`border rounded px-3 py-2 w-full ${
@@ -174,6 +161,8 @@ export default function EditBookPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+
+              {/* Status */}
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
@@ -188,57 +177,27 @@ export default function EditBookPage() {
                 <option value="completed">Selesai Dibaca</option>
               </select>
 
-              {/* Tanggal mulai & selesai */}
+              {/* Cover URL */}
               <div>
-                <label className="block mb-1">Tanggal Mulai</label>
+                <label className="block font-medium mb-1">Link Cover (URL)</label>
                 <input
-                  type="date"
-                  value={book.start_date ?? ''}
-                  onChange={(e) =>
-                    setBook({ ...book, start_date: e.target.value })
-                  }
-                  className={`border px-3 py-2 rounded w-full ${
+                  type="url"
+                  placeholder="https://contoh.com/cover.jpg"
+                  value={coverUrl}
+                  onChange={(e) => setCoverUrl(e.target.value)}
+                  className={`border rounded px-3 py-2 w-full ${
                     isDarkMode
-                      ? 'bg-gray-800 border-gray-700 text-white'
-                      : 'bg-white border-gray-300'
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                   }`}
                 />
-              </div>
-
-              <div>
-                <label className="block mb-1">Tanggal Selesai</label>
-                <input
-                  type="date"
-                  value={book.finish_date ?? ''}
-                  onChange={(e) =>
-                    setBook({ ...book, finish_date: e.target.value })
-                  }
-                  className={`border px-3 py-2 rounded w-full ${
-                    isDarkMode
-                      ? 'bg-gray-800 border-gray-700 text-white'
-                      : 'bg-white border-gray-300'
-                  }`}
-                />
-              </div>
-
-              {/* Cover */}
-              <div>
-                <label className="block font-medium mb-1">Cover Sekarang:</label>
-                {book.cover_url ? (
+                {coverUrl && (
                   <img
-                    src={book.cover_url}
+                    src={coverUrl}
                     alt="cover"
-                    className="w-32 h-48 object-cover rounded mb-2"
+                    className="w-32 h-48 object-cover rounded mt-2 mx-auto"
                   />
-                ) : (
-                  <p className="text-gray-500 italic mb-2">Belum ada cover</p>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
-                  className="block"
-                />
               </div>
 
               {/* Progress */}
@@ -291,9 +250,10 @@ export default function EditBookPage() {
                   max="5"
                   value={book.rating || ''}
                   onChange={(e) =>
-                    setBook((prev) =>
-                      prev ? { ...prev, rating: Number(e.target.value) } : prev
-                    )
+                    setBook({
+                      ...book,
+                      rating: Number(e.target.value),
+                    })
                   }
                   className={`border px-3 py-2 rounded w-full ${
                     isDarkMode
@@ -308,9 +268,10 @@ export default function EditBookPage() {
                 <textarea
                   value={book.notes || ''}
                   onChange={(e) =>
-                    setBook((prev) =>
-                      prev ? { ...prev, notes: e.target.value } : prev
-                    )
+                    setBook({
+                      ...book,
+                      notes: e.target.value,
+                    })
                   }
                   className={`border px-3 py-2 rounded w-full ${
                     isDarkMode
