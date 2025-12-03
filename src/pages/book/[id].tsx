@@ -3,8 +3,9 @@ import Head from 'next/head';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import { useDarkMode } from '@/context/DarkModeContext'; // 🌓 pakai context
+import { useDarkMode } from '@/context/DarkModeContext';
 
+// 🆕 tambah purchase_date di tipe Book
 type Book = {
   id: string;
   title: string;
@@ -19,6 +20,7 @@ type Book = {
   current_page?: number | null;
   total_pages?: number | null;
   created_at: string;
+  purchase_date?: string | null; // 👉 Tanggal beli
 };
 
 type Props = {
@@ -132,7 +134,7 @@ export default function BookDetail({ book }: Props) {
               {book.description || 'Belum ada deskripsi buku.'}
             </p>
 
-            {/* Progress Membaca */}
+            {/* Progress */}
             {progress !== null && (
               <div className="mb-6">
                 <p className="font-medium mb-1">Progress Membaca:</p>
@@ -178,7 +180,7 @@ export default function BookDetail({ book }: Props) {
               </div>
             )}
 
-            {/* Catatan Membaca */}
+            {/* Catatan */}
             {book.notes && (
               <div className="mb-5">
                 <p className="font-medium mb-1">Catatan Membaca:</p>
@@ -188,8 +190,20 @@ export default function BookDetail({ book }: Props) {
               </div>
             )}
 
-            {/* Info waktu */}
-            <p className="text-sm text-gray-400 mt-6">
+            {/* 🆕 Tanggal Beli */}
+            {book.purchase_date && (
+              <p className="text-sm text-gray-400">
+                Dibeli pada{' '}
+                {new Date(book.purchase_date).toLocaleDateString('id-ID', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </p>
+            )}
+
+            {/* Info waktu dibuat */}
+            <p className="text-sm text-gray-400 mt-2">
               Ditambahkan pada{' '}
               {new Date(book.created_at).toLocaleDateString('id-ID', {
                 day: '2-digit',
@@ -206,6 +220,7 @@ export default function BookDetail({ book }: Props) {
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const { id } = params as { id: string };
+
   const { data: book, error } = await supabase
     .from('books')
     .select('*')

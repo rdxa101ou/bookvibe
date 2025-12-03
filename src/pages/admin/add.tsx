@@ -11,6 +11,7 @@ export default function AddBookPage() {
   const [status, setStatus] = useState('wishlist');
   const [startDate, setStartDate] = useState('');
   const [finishDate, setFinishDate] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState(''); // ➕ Tanggal beli
   const [currentPage, setCurrentPage] = useState<number | null>(null);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [rating, setRating] = useState<number | null>(null);
@@ -33,6 +34,7 @@ export default function AddBookPage() {
         status,
         start_date: startDate || null,
         finish_date: finishDate || null,
+        purchase_date: purchaseDate || null,   // ➕ Tanggal beli
         current_page: currentPage,
         total_pages: totalPages,
         rating,
@@ -63,6 +65,7 @@ export default function AddBookPage() {
           <h1 className="text-2xl font-bold mb-6">➕ Tambah Buku Baru</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            
             {/* Judul */}
             <input
               type="text"
@@ -118,7 +121,7 @@ export default function AddBookPage() {
               <option value="completed">Selesai Dibaca</option>
             </select>
 
-            {/* Tanggal Mulai & Selesai */}
+            {/* Tanggal Mulai */}
             <div>
               <label className="block mb-1">Tanggal Mulai</label>
               <input
@@ -133,6 +136,7 @@ export default function AddBookPage() {
               />
             </div>
 
+            {/* Tanggal Selesai */}
             <div>
               <label className="block mb-1">Tanggal Selesai</label>
               <input
@@ -144,6 +148,21 @@ export default function AddBookPage() {
                 }`}
                 value={finishDate}
                 onChange={(e) => setFinishDate(e.target.value)}
+              />
+            </div>
+
+            {/* Tanggal Beli */}
+            <div>
+              <label className="block mb-1">Tanggal Beli</label>
+              <input
+                type="date"
+                className={`w-full border rounded px-3 py-2 ${
+                  isDarkMode
+                    ? 'bg-gray-900 border-gray-700 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                value={purchaseDate}
+                onChange={(e) => setPurchaseDate(e.target.value)}
               />
             </div>
 
@@ -233,7 +252,7 @@ export default function AddBookPage() {
               )}
             </div>
 
-            {/* Tombol Simpan */}
+            {/* Simpan */}
             <button
               type="submit"
               disabled={loading}
