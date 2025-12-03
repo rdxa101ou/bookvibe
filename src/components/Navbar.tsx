@@ -1,9 +1,9 @@
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { Moon, Sun, Menu, X } from 'lucide-react';
-import { useDarkMode } from '@/context/DarkModeContext';
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { Moon, Sun, Menu, X } from "lucide-react";
+import { useDarkMode } from "@/context/DarkModeContext";
 
 export default function Navbar() {
   const router = useRouter();
@@ -14,9 +14,11 @@ export default function Navbar() {
   useEffect(() => {
     checkUser();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
 
     return () => {
       listener.subscription.unsubscribe();
@@ -33,20 +35,17 @@ export default function Navbar() {
   async function handleLogout() {
     await supabase.auth.signOut();
     setUser(null);
-    router.push('/');
+    router.push("/");
   }
 
   return (
     <nav
       className={`px-6 py-3 shadow-md transition-colors duration-300 flex items-center justify-between ${
-        isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
       }`}
     >
       {/* LOGO */}
-      <Link
-        href="/"
-        className="font-bold text-lg hover:text-blue-500"
-      >
+      <Link href="/" className="font-bold text-lg hover:text-blue-500">
         📚 MyBooks
       </Link>
 
@@ -55,7 +54,7 @@ export default function Navbar() {
         <Link
           href="/"
           className={`hover:text-blue-500 ${
-            router.pathname === '/' ? 'text-blue-500' : ''
+            router.pathname === "/" ? "text-blue-500" : ""
           }`}
         >
           Daftar Buku
@@ -66,19 +65,10 @@ export default function Navbar() {
             <Link
               href="/admin"
               className={`hover:text-blue-500 ${
-                router.pathname === '/admin' ? 'text-blue-500' : ''
+                router.pathname === "/admin" ? "text-blue-500" : ""
               }`}
             >
               Dashboard
-            </Link>
-
-            <Link
-              href="/admin/add"
-              className={`hover:text-blue-500 ${
-                router.pathname.startsWith('/admin/add') ? 'text-blue-500' : ''
-              }`}
-            >
-              Tambah Buku
             </Link>
           </>
         )}
@@ -98,8 +88,8 @@ export default function Navbar() {
             href="/login"
             className={`px-4 py-2 rounded ${
               isDarkMode
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
             }`}
           >
             Login
@@ -109,8 +99,8 @@ export default function Navbar() {
             onClick={handleLogout}
             className={`px-4 py-2 rounded ${
               isDarkMode
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-red-500 hover:bg-red-600 text-white'
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-red-500 hover:bg-red-600 text-white"
             }`}
           >
             Logout
@@ -130,21 +120,25 @@ export default function Navbar() {
       {open && (
         <div
           className={`absolute top-16 left-0 w-full px-6 py-4 flex flex-col gap-3 shadow-md md:hidden ${
-            isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+            isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
           }`}
         >
-          <Link href="/" className="py-2 hover:text-blue-400" onClick={() => setOpen(false)}>
+          <Link
+            href="/"
+            className="py-2 hover:text-blue-400"
+            onClick={() => setOpen(false)}
+          >
             Daftar Buku
           </Link>
 
           {user && (
             <>
-              <Link href="/admin" className="py-2 hover:text-blue-400" onClick={() => setOpen(false)}>
+              <Link
+                href="/admin"
+                className="py-2 hover:text-blue-400"
+                onClick={() => setOpen(false)}
+              >
                 Dashboard
-              </Link>
-
-              <Link href="/admin/add" className="py-2 hover:text-blue-400" onClick={() => setOpen(false)}>
-                Tambah Buku
               </Link>
             </>
           )}
@@ -155,7 +149,7 @@ export default function Navbar() {
             className="flex items-center gap-2 py-2"
           >
             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            {isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
+            {isDarkMode ? "Mode Terang" : "Mode Gelap"}
           </button>
 
           {/* LOGIN / LOGOUT */}
@@ -165,8 +159,8 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className={`px-4 py-2 text-center rounded ${
                 isDarkMode
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-blue-500 hover:bg-blue-600 text-white"
               }`}
             >
               Login
@@ -179,8 +173,8 @@ export default function Navbar() {
               }}
               className={`px-4 py-2 rounded ${
                 isDarkMode
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
               }`}
             >
               Logout
