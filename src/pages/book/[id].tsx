@@ -1,9 +1,9 @@
-import { GetServerSideProps } from 'next';
-import Head from 'next/head';
-import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import { useDarkMode } from '@/context/DarkModeContext';
+import { GetServerSideProps } from "next";
+import Head from "next/head";
+import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import { useDarkMode } from "@/context/DarkModeContext";
 
 // 🆕 tambah purchase_date di tipe Book
 type Book = {
@@ -30,23 +30,32 @@ type Props = {
 export default function BookDetail({ book }: Props) {
   const { isDarkMode } = useDarkMode();
 
+  // 🛑 Tampilan ketika buku tidak ditemukan
   if (!book)
     return (
       <>
         <Navbar />
         <div
           className={`p-8 text-center ${
-            isDarkMode ? 'bg-gray-950 text-gray-200' : 'bg-gray-50 text-gray-700'
+            isDarkMode
+              ? "bg-gray-950 text-gray-200"
+              : "bg-gray-50 text-gray-700"
           }`}
         >
-          <p className="mb-2">Buku tidak ditemukan.</p>
+          <p className="mb-3 text-lg font-medium">Buku tidak ditemukan.</p>
+
+          {/* 🔥 Tombol kembali baru */}
           <Link
             href="/"
-            className={`${
-              isDarkMode ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'
-            }`}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+              transition-all duration-200 shadow-sm hover:shadow-md border
+              ${
+                isDarkMode
+                  ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+              }`}
           >
-            ← Kembali ke Daftar Buku
+            <span className="text-lg">←</span> Kembali
           </Link>
         </div>
       </>
@@ -67,21 +76,26 @@ export default function BookDetail({ book }: Props) {
 
       <main
         className={`p-8 min-h-screen transition-colors duration-300 ${
-          isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'
+          isDarkMode ? "bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900"
         }`}
       >
+        {/* 🔥 Tombol kembali baru */}
         <Link
           href="/"
-          className={`inline-block mb-6 ${
-            isDarkMode ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'
-          }`}
+          className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-lg text-sm font-medium
+            transition-all duration-200 shadow-sm hover:shadow-md border
+            ${
+              isDarkMode
+                ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
         >
-          ← Kembali ke Daftar Buku
+          <span className="text-lg">←</span> Kembali
         </Link>
 
         <div
           className={`flex flex-col md:flex-row gap-8 p-6 rounded-xl shadow-md transition-colors ${
-            isDarkMode ? 'bg-gray-900 text-gray-200' : 'bg-white text-gray-800'
+            isDarkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
           }`}
         >
           {/* Cover Buku */}
@@ -94,7 +108,9 @@ export default function BookDetail({ book }: Props) {
           ) : (
             <div
               className={`w-full md:w-64 h-80 flex items-center justify-center rounded-xl ${
-                isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+                isDarkMode
+                  ? "bg-gray-700 text-gray-400"
+                  : "bg-gray-200 text-gray-500"
               }`}
             >
               No Cover
@@ -109,29 +125,29 @@ export default function BookDetail({ book }: Props) {
             {/* Status */}
             <span
               className={`text-xs rounded px-2 py-1 inline-block mb-5 ${
-                book.status === 'completed'
-                  ? 'bg-green-200 text-green-800'
-                  : book.status === 'reading'
-                  ? 'bg-blue-200 text-blue-800'
-                  : 'bg-gray-200 text-gray-700'
+                book.status === "completed"
+                  ? "bg-green-200 text-green-800"
+                  : book.status === "reading"
+                  ? "bg-blue-200 text-blue-800"
+                  : "bg-gray-200 text-gray-700"
               } dark:${
-                book.status === 'completed'
-                  ? 'bg-green-800 text-green-100'
-                  : book.status === 'reading'
-                  ? 'bg-blue-800 text-blue-100'
-                  : 'bg-gray-700 text-gray-300'
+                book.status === "completed"
+                  ? "bg-green-800 text-green-100"
+                  : book.status === "reading"
+                  ? "bg-blue-800 text-blue-100"
+                  : "bg-gray-700 text-gray-300"
               }`}
             >
-              {book.status === 'wishlist'
-                ? 'Ingin Dibaca'
-                : book.status === 'reading'
-                ? 'Sedang Dibaca'
-                : 'Selesai Dibaca'}
+              {book.status === "wishlist"
+                ? "Ingin Dibaca"
+                : book.status === "reading"
+                ? "Sedang Dibaca"
+                : "Selesai Dibaca"}
             </span>
 
             {/* Deskripsi */}
             <p className="leading-relaxed mb-6">
-              {book.description || 'Belum ada deskripsi buku.'}
+              {book.description || "Belum ada deskripsi buku."}
             </p>
 
             {/* Progress */}
@@ -140,7 +156,7 @@ export default function BookDetail({ book }: Props) {
                 <p className="font-medium mb-1">Progress Membaca:</p>
                 <div
                   className={`w-full rounded-full h-3 overflow-hidden ${
-                    isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                    isDarkMode ? "bg-gray-700" : "bg-gray-200"
                   }`}
                 >
                   <div
@@ -159,7 +175,7 @@ export default function BookDetail({ book }: Props) {
               <div className="mb-5">
                 <p className="font-medium mb-1">Rating:</p>
                 <div className="text-yellow-500 text-xl">
-                  {'⭐'.repeat(Math.min(book.rating, 5))}
+                  {"⭐".repeat(Math.min(book.rating, 5))}
                 </div>
               </div>
             )}
@@ -170,12 +186,12 @@ export default function BookDetail({ book }: Props) {
                 <p className="font-medium mb-1">Periode Membaca:</p>
                 <p className="text-gray-600 dark:text-gray-400">
                   {book.start_date
-                    ? new Date(book.start_date).toLocaleDateString('id-ID')
-                    : '—'}{' '}
-                  s/d{' '}
+                    ? new Date(book.start_date).toLocaleDateString("id-ID")
+                    : "—"}{" "}
+                  s/d{" "}
                   {book.finish_date
-                    ? new Date(book.finish_date).toLocaleDateString('id-ID')
-                    : '—'}
+                    ? new Date(book.finish_date).toLocaleDateString("id-ID")
+                    : "—"}
                 </p>
               </div>
             )}
@@ -190,25 +206,25 @@ export default function BookDetail({ book }: Props) {
               </div>
             )}
 
-            {/* 🆕 Tanggal Beli */}
+            {/* Tanggal Beli */}
             {book.purchase_date && (
               <p className="text-sm text-gray-400">
-                Dibeli pada{' '}
-                {new Date(book.purchase_date).toLocaleDateString('id-ID', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
+                Dibeli pada{" "}
+                {new Date(book.purchase_date).toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
                 })}
               </p>
             )}
 
             {/* Info waktu dibuat */}
             <p className="text-sm text-gray-400 mt-2">
-              Ditambahkan pada{' '}
-              {new Date(book.created_at).toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
+              Ditambahkan pada{" "}
+              {new Date(book.created_at).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
               })}
             </p>
           </div>
@@ -222,9 +238,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const { id } = params as { id: string };
 
   const { data: book, error } = await supabase
-    .from('books')
-    .select('*')
-    .eq('id', id)
+    .from("books")
+    .select("*")
+    .eq("id", id)
     .single();
 
   if (error) console.error(error);
