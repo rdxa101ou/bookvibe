@@ -1,27 +1,30 @@
-import { useEffect, useState, FormEvent } from 'react';
-import { useRouter } from 'next/router';
-import { supabase } from '@/lib/supabaseClient';
-import Navbar from '@/components/Navbar';
-import { useDarkMode } from '@/context/DarkModeContext';
+import { useEffect, useState, FormEvent } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "@/lib/supabaseClient";
+import Navbar from "@/components/Navbar";
+import { useDarkMode } from "@/context/DarkModeContext";
 
 export default function EditBookPage() {
   const router = useRouter();
   const { id } = router.query;
   const { isDarkMode } = useDarkMode();
 
-  // Semua state SAMA dengan AddBook
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('wishlist');
-  const [startDate, setStartDate] = useState('');
-  const [finishDate, setFinishDate] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
+  // Semua state SAMA dengan AddBook, termasuk price
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("wishlist");
+  const [startDate, setStartDate] = useState("");
+  const [finishDate, setFinishDate] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState("");
   const [currentPage, setCurrentPage] = useState<number | null>(null);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [rating, setRating] = useState<number | null>(null);
-  const [notes, setNotes] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
+  const [notes, setNotes] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
+
+  // ➕ Harga buku
+  const [price, setPrice] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -33,30 +36,33 @@ export default function EditBookPage() {
 
   async function fetchBook(bookId: string) {
     const { data, error } = await supabase
-      .from('books')
-      .select('*')
-      .eq('id', bookId)
+      .from("books")
+      .select("*")
+      .eq("id", bookId)
       .single();
 
     if (error || !data) {
-      alert('Gagal mengambil data buku: ' + error?.message);
-      router.push('/admin');
+      alert("Gagal mengambil data buku: " + error?.message);
+      router.push("/admin");
       return;
     }
 
     // Set semua datanya
     setTitle(data.title);
     setAuthor(data.author);
-    setDescription(data.description || '');
+    setDescription(data.description || "");
     setStatus(data.status);
-    setStartDate(data.start_date || '');
-    setFinishDate(data.finish_date || '');
-    setPurchaseDate(data.purchase_date || '');
+    setStartDate(data.start_date || "");
+    setFinishDate(data.finish_date || "");
+    setPurchaseDate(data.purchase_date || "");
     setCurrentPage(data.current_page);
     setTotalPages(data.total_pages);
     setRating(data.rating);
-    setNotes(data.notes || '');
-    setCoverUrl(data.cover_url || '');
+    setNotes(data.notes || "");
+    setCoverUrl(data.cover_url || "");
+
+    // ➕ Harga
+    setPrice(data.price ?? null);
   }
 
   // Update buku
@@ -68,7 +74,7 @@ export default function EditBookPage() {
     if (!bookId) return;
 
     const { error } = await supabase
-      .from('books')
+      .from("books")
       .update({
         title,
         author,
@@ -82,14 +88,17 @@ export default function EditBookPage() {
         rating,
         notes,
         cover_url: coverUrl || null,
+
+        // ➕ Harga
+        price,
       })
-      .eq('id', bookId);
+      .eq("id", bookId);
 
     if (error) {
-      alert('Gagal memperbarui buku: ' + error.message);
+      alert("Gagal memperbarui buku: " + error.message);
     } else {
-      alert('📘 Buku berhasil diperbarui!');
-      router.push('/admin');
+      alert("📘 Buku berhasil diperbarui!");
+      router.push("/admin");
     }
 
     setLoading(false);
@@ -100,14 +109,13 @@ export default function EditBookPage() {
       <Navbar />
       <div
         className={`min-h-screen p-8 transition-colors duration-300 ${
-          isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'
+          isDarkMode ? "bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900"
         }`}
       >
         <div className="max-w-lg mx-auto">
           <h1 className="text-2xl font-bold mb-6">✏️ Edit Buku</h1>
 
           <form onSubmit={handleUpdate} className="space-y-4">
-
             {/* Judul */}
             <input
               type="text"
@@ -116,8 +124,8 @@ export default function EditBookPage() {
               onChange={(e) => setTitle(e.target.value)}
               className={`w-full border rounded px-3 py-2 ${
                 isDarkMode
-                  ? 'bg-gray-900 border-gray-700'
-                  : 'bg-white border-gray-300'
+                  ? "bg-gray-900 border-gray-700"
+                  : "bg-white border-gray-300"
               }`}
               required
             />
@@ -129,7 +137,9 @@ export default function EditBookPage() {
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               className={`w-full border rounded px-3 py-2 ${
-                isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                isDarkMode
+                  ? "bg-gray-900 border-gray-700"
+                  : "bg-white border-gray-300"
               }`}
               required
             />
@@ -140,7 +150,9 @@ export default function EditBookPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={`w-full border rounded px-3 py-2 ${
-                isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                isDarkMode
+                  ? "bg-gray-900 border-gray-700"
+                  : "bg-white border-gray-300"
               }`}
             />
 
@@ -149,7 +161,9 @@ export default function EditBookPage() {
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className={`w-full border rounded px-3 py-2 ${
-                isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                isDarkMode
+                  ? "bg-gray-900 border-gray-700"
+                  : "bg-white border-gray-300"
               }`}
             >
               <option value="wishlist">Ingin Dibaca</option>
@@ -165,7 +179,9 @@ export default function EditBookPage() {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
               />
             </div>
@@ -177,7 +193,9 @@ export default function EditBookPage() {
                 value={finishDate}
                 onChange={(e) => setFinishDate(e.target.value)}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
               />
             </div>
@@ -189,7 +207,26 @@ export default function EditBookPage() {
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
+                }`}
+              />
+            </div>
+
+            {/* ➕ Harga Buku */}
+            <div>
+              <label className="block mb-1">Harga Buku (Rp)</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="contoh: 85000"
+                value={price ?? ""}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className={`w-full border rounded px-3 py-2 ${
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
               />
             </div>
@@ -197,16 +234,17 @@ export default function EditBookPage() {
             {/* Progress */}
             <div>
               <label className="block mb-1">Progress Membaca</label>
-
               <div className="flex gap-2">
                 <input
                   type="number"
                   placeholder="Halaman saat ini"
                   min="0"
-                  value={currentPage ?? ''}
+                  value={currentPage ?? ""}
                   onChange={(e) => setCurrentPage(Number(e.target.value))}
                   className={`border rounded px-3 py-2 w-1/2 ${
-                    isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                    isDarkMode
+                      ? "bg-gray-900 border-gray-700"
+                      : "bg-white border-gray-300"
                   }`}
                 />
 
@@ -214,10 +252,12 @@ export default function EditBookPage() {
                   type="number"
                   placeholder="Total halaman"
                   min="1"
-                  value={totalPages ?? ''}
+                  value={totalPages ?? ""}
                   onChange={(e) => setTotalPages(Number(e.target.value))}
                   className={`border rounded px-3 py-2 w-1/2 ${
-                    isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                    isDarkMode
+                      ? "bg-gray-900 border-gray-700"
+                      : "bg-white border-gray-300"
                   }`}
                 />
               </div>
@@ -230,10 +270,12 @@ export default function EditBookPage() {
                 type="number"
                 min="1"
                 max="5"
-                value={rating ?? ''}
+                value={rating ?? ""}
                 onChange={(e) => setRating(Number(e.target.value))}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
               />
             </div>
@@ -245,7 +287,9 @@ export default function EditBookPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
                 rows={3}
               />
@@ -259,7 +303,9 @@ export default function EditBookPage() {
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
                 className={`w-full border rounded px-3 py-2 ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-300"
                 }`}
               />
 
@@ -272,17 +318,17 @@ export default function EditBookPage() {
               )}
             </div>
 
-            {/* Simpan */}
+            {/* Button */}
             <button
               type="submit"
               disabled={loading}
               className={`w-full py-2 rounded font-semibold ${
                 isDarkMode
-                  ? 'bg-blue-700 hover:bg-blue-600'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  ? "bg-blue-700 hover:bg-blue-600"
+                  : "bg-blue-600 hover:bg-blue-700"
               } text-white`}
             >
-              {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+              {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </form>
         </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useDarkMode } from "@/context/DarkModeContext";
 
-// 🆕 tambah purchase_date di tipe Book
+// 🆕 tambah purchase_date & price ke tipe Book
 type Book = {
   id: string;
   title: string;
@@ -20,7 +20,8 @@ type Book = {
   current_page?: number | null;
   total_pages?: number | null;
   created_at: string;
-  purchase_date?: string | null; // 👉 Tanggal beli
+  purchase_date?: string | null;
+  price?: number | null; // 🆕 harga buku
 };
 
 type Props = {
@@ -30,7 +31,6 @@ type Props = {
 export default function BookDetail({ book }: Props) {
   const { isDarkMode } = useDarkMode();
 
-  // 🛑 Tampilan ketika buku tidak ditemukan
   if (!book)
     return (
       <>
@@ -43,8 +43,6 @@ export default function BookDetail({ book }: Props) {
           }`}
         >
           <p className="mb-3 text-lg font-medium">Buku tidak ditemukan.</p>
-
-          {/* 🔥 Tombol kembali baru */}
           <Link
             href="/"
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
@@ -79,7 +77,6 @@ export default function BookDetail({ book }: Props) {
           isDarkMode ? "bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900"
         }`}
       >
-        {/* 🔥 Tombol kembali baru */}
         <Link
           href="/"
           className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-lg text-sm font-medium
@@ -98,7 +95,7 @@ export default function BookDetail({ book }: Props) {
             isDarkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
           }`}
         >
-          {/* Cover Buku */}
+          {/* Cover */}
           {book.cover_url ? (
             <img
               src={book.cover_url}
@@ -180,7 +177,17 @@ export default function BookDetail({ book }: Props) {
               </div>
             )}
 
-            {/* Periode Membaca */}
+            {/* 🆕 Harga Buku */}
+            {book.price !== null && book.price !== undefined && (
+              <div className="mb-5">
+                <p className="font-medium mb-1">Harga Buku:</p>
+                <p className="text-lg font-semibold text-emerald-500 dark:text-emerald-300">
+                  Rp {book.price.toLocaleString("id-ID")}
+                </p>
+              </div>
+            )}
+
+            {/* Periode membaca */}
             {(book.start_date || book.finish_date) && (
               <div className="mb-5">
                 <p className="font-medium mb-1">Periode Membaca:</p>
@@ -206,7 +213,7 @@ export default function BookDetail({ book }: Props) {
               </div>
             )}
 
-            {/* Tanggal Beli */}
+            {/* Tanggal beli */}
             {book.purchase_date && (
               <p className="text-sm text-gray-400">
                 Dibeli pada{" "}
@@ -239,7 +246,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   const { data: book, error } = await supabase
     .from("books")
-    .select("*")
+    .select("*") // ⚠️ pastikan Supabase sudah punya kolom price
     .eq("id", id)
     .single();
 
